@@ -3,16 +3,18 @@ const fetch = require('node-fetch')
 const redis = require('redis')
 require('dotenv').config()
 
+// Defining PORTS and HOST
 const PORT = process.env.PORT || 5000;
-const REDIS_PORT = process.env.REDIS_PORT || 6379;
-const REDIS_HOST = process.env.REDIS_HOST || '192.168.0.5';
+const REDIS_PORT = process.env.REDIS_PORT;
+const REDIS_HOST = process.env.REDIS_HOST;
 
+// Creating Redis Client
 const client = redis.createClient(REDIS_PORT, REDIS_HOST);
 
 const app = express();
 
 function setResponse(username, repos) {
-    return `<h2>${username} has ${repos} GitHub repos</h2>`
+    return `<h2>${username} has ${repos} GitHub repos</h2>`;
 }
 
 // Make request to GitHub for data
@@ -29,7 +31,7 @@ async function getRepos(req, res, next) {
         const repos = data.public_repos;
         
         // Set to Redis
-        client.setex(username, 3600, repos);
+        client.set(username, repos, 'EX', 3600);
         
         res.send(setResponse(username, repos));
     } catch (err) {
